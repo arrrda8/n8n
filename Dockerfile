@@ -1,6 +1,6 @@
-FROM n8nio/n8n:latest
+FROM n8nio/n8n:latest-debian
 
-# Installieren Sie notwendige Systembibliotheken
+# Installieren von notwendigen Systembibliotheken
 USER root
 RUN apt-get update && apt-get install -y \
     gconf-service \
@@ -42,13 +42,19 @@ RUN apt-get update && apt-get install -y \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Installieren Sie Puppeteer Extra und erforderliche Plugins
+# Installieren von Puppeteer Extra und erforderlichen Plugins
 RUN npm install puppeteer-extra puppeteer-extra-plugin-stealth
 
-# Optional: Kopieren Sie Ihre Skripte in das Image
+# Optional: Kopieren deiner Skripte in das Image
 COPY ./scripts /home/node/scripts
 
-# Setzen Sie die richtigen Berechtigungen
+# Setzen der richtigen Berechtigungen
 RUN chown -R node:node /home/node/scripts
 
 USER node
+
+# Exponieren des Ports
+EXPOSE 5678
+
+# Starten der Anwendung
+CMD ["n8n"]

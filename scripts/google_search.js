@@ -1,14 +1,8 @@
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 
 async function searchCompanyWebsite(companyName) {
-  const browser = await puppeteer.launch({
-    headless: true,
-    executablePath: '/usr/bin/chromium',
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
-
+  const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
-  await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36');
 
   // Google-Suche aufrufen
   const query = encodeURIComponent(companyName);
@@ -28,7 +22,6 @@ async function searchCompanyWebsite(companyName) {
   return link;
 }
 
-// Eingabeparameter
 const companyName = process.argv[2];
 
 if (!companyName) {
@@ -38,13 +31,12 @@ if (!companyName) {
 
 searchCompanyWebsite(companyName)
   .then((website) => {
-    const result = website
-      ? { website_url: website }
-      : { error: `Keine Webseite für ${companyName} gefunden.` };
-
-    console.log(JSON.stringify(result));
+    if (website) {
+      console.log(`${website}`);
+    } else {
+      console.log(`Keine Webseite f端r ${companyName} gefunden.`);
+    }
   })
   .catch((error) => {
-    console.error(JSON.stringify({ error: `Fehler beim Abrufen der Webseite: ${error.message}` }));
-    process.exit(1);
+    console.error('Fehler beim Abrufen der Webseite:', error);
   });

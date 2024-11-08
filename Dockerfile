@@ -1,8 +1,9 @@
 FROM n8nio/n8n:latest-debian
 
-# Installieren von notwendigen Systembibliotheken
+# Install necessary system libraries and Chromium
 USER root
 RUN apt-get update && apt-get install -y \
+    chromium \
     gconf-service \
     libasound2 \
     libatk1.0-0 \
@@ -18,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     libgtk-3-0 \
     libnspr4 \
+    libnss3 \
     libpango1.0-0 \
     libstdc++6 \
     libx11-6 \
@@ -29,31 +31,42 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     libxfixes3 \
     libxi6 \
+    libxkbcommon0 \
     libxrandr2 \
     libxrender1 \
+    libxshmfence1 \
     libxss1 \
     libxtst6 \
     ca-certificates \
     fonts-liberation \
-    libappindicator1 \
-    libnss3 \
     lsb-release \
     xdg-utils \
     wget \
+    --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-# Installieren von Puppeteer Extra und erforderlichen Plugins
-RUN npm install puppeteer-extra puppeteer-extra-plugin-stealth
+# Erstelle einen Symlink von chromium zu chromium-browser
+RUN ln -s /usr/bin/chromium /usr/bin/chromium-browser
 
-# Optional: Kopieren deiner Skripte in das Image
-COPY ./scripts /home/node/scripts
+# Setze das Arbeitsverzeichnis zu deinem Skriptverzeichnis
+WORKDIR /home/node/custom-scripts
 
-# Setzen der richtigen Berechtigungen
-RUN chown -R node:node /home/node/scripts
+# Kopiere deine Skripte und package.json
+COPY --chown=node:node ./custom-scripts /home/node/custom-scripts
 
-USER node
+# Setze Umgebungsvariable, um den Chromium-Download zu überspringen
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
-# Exponieren des Ports
+# Installiere die Abhängigkeiten aus package.json
+RUN npm install
+
+# Stelle sicher, dass node_modules dem Benutzer 'node' gehören
+RUN chown -R node:node /home/node/custom-scripts/node_modules
+
+# Setze das Arbeitsverzeichnis zurück
+WORKDIR /home/node
+
+# Exponiere den Port
 EXPOSE 5678
 
 # Starten der Anwendung

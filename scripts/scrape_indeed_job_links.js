@@ -1,8 +1,6 @@
-const puppeteerExtra = require('puppeteer-extra');
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-
-puppeteerExtra.use(StealthPlugin());
+puppeteer.use(StealthPlugin());
 
 // Eingabeparameter
 const jobTitle = process.argv[2];
@@ -11,15 +9,14 @@ const pageNumber = process.argv[4];
 
 (async () => {
   try {
-
     // Browser starten
     const browser = await puppeteer.launch({
       headless: true,
-      executablePath: '/usr/bin/chromium',
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
-
     const page = await browser.newPage();
+
+    // User-Agent setzen
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36');
 
     // Berechnung des Startparameters
@@ -30,6 +27,9 @@ const pageNumber = process.argv[4];
 
     // Seite aufrufen
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+
+    // Warten, bis die Jobkarten geladen sind
+    await page.waitForSelector('a.jcs-JobTitle', { timeout: 5000 }).catch(() => {});
 
     // Job-Links extrahieren
     const jobLinks = await page.evaluate(() => {
@@ -44,7 +44,7 @@ const pageNumber = process.argv[4];
     });
 
     // Ergebnis ausgeben
-    console.log(JSON.stringify({ jobLinks: jobLinks }));
+    console.log(JSON.stringify({ jobLinks }));
 
     // Browser schließen
     await browser.close();

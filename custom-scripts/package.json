@@ -1,0 +1,9 @@
+{
+  "name": "custom-scripts",
+  "version": "1.0.0",
+  "dependencies": {
+    "puppeteer-core": "5.5.0",
+    "puppeteer-extra": "3.1.15",
+    "puppeteer-extra-plugin-stealth": "2.6.5"
+  }
+}
